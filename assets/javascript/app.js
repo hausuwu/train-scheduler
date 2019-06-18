@@ -19,8 +19,8 @@ var firebaseConfig = {
     var database = firebase.database();
     var name = "";
     var destin = "";
-    var time = 0;
-    var freq = 0;
+    var time;
+    var freq;
 
 
 // Functions
@@ -36,6 +36,32 @@ var firebaseConfig = {
         time = $("#trainTime").val().trim();
         freq = $("#frequency").val().trim();
 
+        // FIRST TIME
+        var firstTimeConverted = moment(time, "HH:mm").subtract(1, "years");
+        // console.log(firstTimeConverted);
+
+        // CURRENT TIME
+        var currentTime = moment();
+        // console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
+
+        // DIFFERENCE BETWEEN TIMES
+        var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+        // console.log("DIFFERENCE IN TIME: " + diffTime);
+
+        // TIME APART 
+        var tRemainder = diffTime % freq;
+        // console.log(tRemainder);
+        
+        // MINS UNTIL TRAIN
+        var tMinutesTillTrain = freq - tRemainder;
+        var minutesUntil = tMinutesTillTrain.toString();
+        // console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
+
+        // NEXT TRAIN
+        var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+        var trainNext = nextTrain.toString();
+        // console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
+
         // console.log(name);
         // console.log(destin);
         // console.log(time);
@@ -46,8 +72,9 @@ var firebaseConfig = {
 
             train: name,
             destination: destin,
-            departure: time,
             frequency: freq,
+            nextArrival: trainNext,
+            minsUntil: minutesUntil,
         
         });
 
@@ -59,13 +86,13 @@ var firebaseConfig = {
     database.ref().on("child_added", function(childSnapshot) {
 
         // Log everything that's coming out of snapshot
-        console.log(childSnapshot.val().train);
-        console.log(childSnapshot.val().destination);
-        console.log(childSnapshot.val().departure);
-        console.log(childSnapshot.val().frequency);
+        // console.log(childSnapshot.val().train);
+        // console.log(childSnapshot.val().destination);
+        // console.log(childSnapshot.val().departure);
+        // console.log(childSnapshot.val().frequency);
 
         // full list of items to the table
-        $(".train-table").append("<tr><td>" + childSnapshot.val().train + "</td><td>" + childSnapshot.val().destination + "</td><td>" + childSnapshot.val().departure + "</td><td>" + childSnapshot.val().frequency + "</td></tr>");
+        $(".train-table").append("<tr><td>" + childSnapshot.val().train + "</td><td>" + childSnapshot.val().destination + "</td><td>" + childSnapshot.val().frequency + "</td><td>" + childSnapshot.val().nextArrival + "</td><td>" + childSnapshot.val().minsUntil + "</td></tr>");
 
         // Handle the errors
         }, function(errorObject) {
